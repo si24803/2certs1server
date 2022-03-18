@@ -1,0 +1,45 @@
+version: '3'
+
+secrets:
+  API_TST_EXAMPLE_CRT:
+    file: ./crypto/api.tst.example.pt_cert.pem
+  API_TST_EXAMPLE_KEY:
+    file: ./crypto/api.tst.example.pt_key.pem
+  APP_TST_EXAMPLE_CRT:
+    file: ./crypto/app.tst.example.pt_cert.pem
+  APP_TST_EXAMPLE_KEY:
+    file: ./crypto/app.tst.example.pt_key.pem
+
+services:
+  nginx:
+    image: nginx:latest
+    ports:
+      - 80:80
+      - 443:443
+      - 446:8443
+    restart: unless-stopped
+    volumes:
+      - ./conf:/etc/nginx/conf.d:ro
+      #- ./crypto:/etc/crypto:ro
+      - ./doc_root:/usr/share/nginx/www
+    secrets:
+      - source: API_TST_EXAMPLE_CRT
+        target: /etc/nginx/ssl/api.tst.example.pt/cert.pem
+        mode: 0444
+      - source: API_TST_EXAMPLE_KEY
+        target: /etc/nginx/ssl/api.tst.example.pt/key.pem
+        mode: 0444
+      - source: APP_TST_EXAMPLE_CRT
+        target: /etc/nginx/ssl/app.tst.example.pt/cert.pem
+        mode: 0444
+      - source: APP_TST_EXAMPLE_KEY
+        target: /etc/nginx/ssl/app.tst.example.pt/key.pem
+        mode: 0444 
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+    networks:
+      - 2certs1server
+
+networks:
+  2certs1server:
+    
+
